@@ -11,7 +11,6 @@ DIVISA
 
 CRIPTO
 ------
-
 BTC -> Bitcoin
 LTC -> Litecoin
 DOGE -> Dogecoin
@@ -20,7 +19,6 @@ SPA -> Spaincoin
 
 FIAT
 ----
-
 EUR -> Euros
 USD -> Dolar Americano
 GBP -> Libra del Reino Unido
