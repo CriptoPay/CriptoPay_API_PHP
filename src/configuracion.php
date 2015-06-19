@@ -1,5 +1,12 @@
 <?php
+/**
+ * Copyright (c) 2014-2015 CriptoPay
+ */
 
+/**
+ * @package CriptoPay_PHP
+ * @version 2.0
+ */
 global $CriptoPay_Configuracion,$CriptoPay_Divisas;
 
 $CriptoPay_Configuracion = array(

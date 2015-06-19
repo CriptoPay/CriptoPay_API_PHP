@@ -1,24 +1,22 @@
 <?php
+/**
+ * Copyright (c) 2014-2015 CriptoPay
+ */
 
-    require_once('../src/autoload.php');
+/**
+ * @package CriptoPay_PHP
+ * @version 2.0
+ */
+
+
+require_once('../src/autoload.php');
     
-    $pago = array(
-        "total"=>20,
-        "divisa"=>"EUR",
-        "elementos"=>array(
-            array("ID_DEL_ELEMENTO","NOMBRE_DESCRIPCION","CANTIDAD","PRECIO_UNITARIO","DIVISA_DEL_PRECIO")
-        )
-    );
-    
-    $CriptoPay = new CriptoPay($USUARIO, $APIKEY);
-    
-    $CriptoPay->API('nuevo_pago',array());
-    
-    /**
-     * return de la función
-     * array(
-     *  "ID_DEL_PAGO",
-     *  "URL_DEL_PAGO"
-     * )
-     */
-    
+$CP_ApiId = "5575d5c6a5d92f6a3d8b4567";
+$CP_ApiPassword = "CPouNCnjWrKoCKwiLYARr5Am55UwhCVC";
+
+
+$CRIPTOPAY = new CRIPTOPAY_CLIENTE_API($CP_ApiId,$CP_ApiPassword);
+
+$resumen = $CRIPTOPAY->Get("wallet","resumen21345");
+
+var_dump($resumen);
