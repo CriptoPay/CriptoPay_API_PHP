@@ -8,6 +8,8 @@
  * @version 2.0
  */
 
+define('DEBUG',true);
+define('CIFRADO',false);
 
 require_once('../src/autoload.php');
     
