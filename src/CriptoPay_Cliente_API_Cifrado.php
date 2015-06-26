@@ -72,7 +72,7 @@ class CRIPTOPAY_CLIENTE_API{
     
     
     protected function Enviar($ambito,$funcion){
-        $ch = curl_init($this->ApiServidor.$ambito."/".$funcion);
+        $ch = curl_init($this->ApiServidor."/".$ambito."/".$funcion);
         
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
