@@ -22,7 +22,7 @@ class CRIPTOPAY_CLIENTE_API{
     
     public function __construct($CP_ApiId,$CP_ApiPassword) {
         $this->ApiId = $CP_ApiId;
-        $this->ApiPassword = $CP_ApiPassword;       
+        $this->ApiPassword = $CP_ApiPassword;
     }
     
     /**

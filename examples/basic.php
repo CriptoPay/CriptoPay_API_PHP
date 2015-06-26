@@ -7,14 +7,18 @@
  * @package CriptoPay_PHP
  * @version 2.0
  */
+if(!defined('DEBUG')){
+    define('DEBUG',true);
+}
 
-define('DEBUG',true);
-define('CIFRADO',false);
+if(!defined('CIFRADO')){
+    define('CIFRADO',false);
+}
 
 require_once('../src/autoload.php');
     
-$CP_ApiId = "5575d5c6a5d92f6a3d8b4567";
-$CP_ApiPassword = "CPouNCnjWrKoCKwiLYARr5Am55UwhCVC";
+$CP_ApiId = "xxxxxxxxxxxxxx";
+$CP_ApiPassword = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 
 $CRIPTOPAY = new CRIPTOPAY_CLIENTE_API($CP_ApiId,$CP_ApiPassword);

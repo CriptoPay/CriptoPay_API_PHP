@@ -13,7 +13,7 @@
 
 class CRIPTOPAY_CLIENTE_API{
     
-    private $ApiId,$ApiPassword,$ApiCertificados,$ApiNonce;
+    private $ApiId,$ApiPassword,$ApiCertificados,$ApiNonce,$ApiServidor;
     private static $SESSION = null;
     private static $KeyPublica = null;
     private static $KeyPrivada = null;
@@ -25,10 +25,20 @@ class CRIPTOPAY_CLIENTE_API{
     protected $idapi,$RESPUESTA = array();
     
     
-    public function __construct($CP_ApiId,$CP_ApiPassword,$CP_ApiCertificados) {
+    public function __construct($CP_ApiId,$CP_ApiPassword,$CP_ApiCertificados,$CP_ApiServidor=null) {
         $this->ApiId = $CP_ApiId;
         $this->ApiPassword = $CP_ApiPassword;       
         $this->ApiCertificados = $CP_ApiCertificados;
+        if(DEBUG){
+            $this->ApiServidor = "http://sandbox.cripto-pay.com";
+        }elseif(!is_null($CP_ApiServidor)){
+            $this->ApiServidor = $CP_ApiServidor;
+        }else{
+            $this->ApiServidor = "https://api.cripto-pay.com";
+        }
+        
+        //Limpiamos el última slash para prevenir errores
+        $this->ApiServidor = (substr($this->ApiServidor,-1)=="/")?substr($this->ApiServidor, 0,strlen($this->ApiServidor)-2):$this->ApiServidor;
     }
     
     /**
@@ -62,7 +72,7 @@ class CRIPTOPAY_CLIENTE_API{
     
     
     protected function Enviar($ambito,$funcion){
-        $ch = curl_init(SERVIDOR.$ambito."/".$funcion);
+        $ch = curl_init($this->ApiServidor.$ambito."/".$funcion);
         
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);

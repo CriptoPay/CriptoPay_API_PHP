@@ -11,8 +11,13 @@
  * @version 2.1
  */
 
-define('DEBUG',true);
-define('CIFRADO',true);
+if(!defined('DEBUG')){
+    define('DEBUG',true);
+}
+
+if(!defined('CIFRADO')){
+    define('CIFRADO',true);
+}
 
 require_once('../src/autoload.php');
 
