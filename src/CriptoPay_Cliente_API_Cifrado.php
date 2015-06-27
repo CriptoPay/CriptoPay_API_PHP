@@ -7,9 +7,12 @@
  * 
  * Versión para el trabajo con datos cifrados en ambos sentidos.
  * 
- * CLIENTE---------------------------SERVIDOR
- * APIID + APIPASSWD(POST)--------------->Verifica las credenciales
- * SESSION<-------------------------(POST)Asigna un token para la sessión
+ * CLIENTE--------------------------------------------------------SERVIDOR
+ * APIID + APIPASSWD(POST)------------------------------->Verifica las credenciales
+ * SESSION<----------------------------------------------(POST)Asigna un token para la sessión
+ * AMBITO+FUNCION(GET)PARAMETROS+SESSION(POST)----------->Procesa la peticion
+ * Recibe respuesta<--------------------------------------Encripta los datos y les envía
+ * 
  * @package CriptoPay_PHP
  * @version 2.1
  */
