@@ -2,7 +2,8 @@
 /**
  * Copyright (c) 2014-2015 CriptoPay
  */
-
+namespace CriptoPayApiRest\src\Comun;
+use CriptoPayApiRest\src\Excepciones;
 /**
  * 
  * Versión para el trabajo con datos cifrados en ambos sentidos.
@@ -14,10 +15,10 @@
  * Recibe respuesta<--------------------------------------Encripta los datos y les envía
  * 
  * @package CriptoPay_PHP
- * @version 2.1
+ * @version 2.2
  */
 
-class CRIPTOPAY_CLIENTE_API{
+class CriptoPayApiRest{
     
     private $ApiId,$ApiPassword,$ApiCertificados,$ApiNonce,$ApiServidor;
     private static $SESSION = null;
@@ -77,7 +78,7 @@ class CRIPTOPAY_CLIENTE_API{
         $this->ObtenerSesion();
         
         $respuesta = $this->Enviar($ambito, $funcion);
-        return (object)json_decode($respuesta->respuesta);
+        return $respuesta->respuesta;
     }
     
     /**
@@ -95,7 +96,7 @@ class CRIPTOPAY_CLIENTE_API{
      * @param String $funcion Función a ejecutar
      * @return boolean
      * @throws Exception
-     * @throws CriptoPay_Exception
+     * @throws Excepciones\Excepcion
      */
     protected function Enviar($ambito,$funcion){
         $ch = curl_init($this->ApiServidor."/".$ambito."/".$funcion);
@@ -132,7 +133,7 @@ class CRIPTOPAY_CLIENTE_API{
         //Si la cabecera es desconocida devuelve una excepción
         if ($estado_HTTP != 200 && $estado_HTTP != 500 && $estado_HTTP <=900) {
             var_dump($respuesta_server);
-            throw new CriptoPay_Exception(sprintf('Curl response http error code "%s"', curl_getinfo($ch, CURLINFO_HTTP_CODE)));
+            throw new Excepciones\Excepcion(sprintf('Curl response http error code "%s"', curl_getinfo($ch, CURLINFO_HTTP_CODE)));
         }elseif ($estado_HTTP >=900) {
             //Si la respuesta devuelve cabecera de error personalizado lo procesa
             $this->Error($estado_HTTP);
@@ -146,17 +147,18 @@ class CRIPTOPAY_CLIENTE_API{
                 self::$SESSION = $token;
             }else{
                 var_dump($token);
-                throw new CriptoPay_Exception("Hay suplantación de sessión");
+                throw new Excepciones\Excepcion("Hay suplantación de sessión");
             }
             return true;
         }elseif(strlen($respuesta_server)==0){
             //Si el servidor devuelve cabecera correcta pero ningun dato salta escepción.
-            throw new CriptoPay_Exception("El servidor no ha devuelto ningún dato");
+            throw new Excepciones\Excepcion("El servidor no ha devuelto ningún dato");
         }else{
             //Si la petición es estandar descifra los datos recibidos y verifica que el nonce es el esperado
             $claro = $this->Desencriptar($respuesta_server);
+            $claro = (object)json_decode($claro);            
             if($claro->nonce != self::$NONCE){
-                throw new CriptoPay_Exception("Hay suplantación de identidad");
+                throw new Excepciones\Excepcion("Hay suplantación de identidad");
             }
         }
         curl_close($ch);
@@ -167,7 +169,7 @@ class CRIPTOPAY_CLIENTE_API{
      * Procesamiento de lso posibles errores enviados por HTTP para ahorro de recursos.
      * Les lanza siempre con excepción.
      * @param HTTP_CODE $codigo
-     * @throws CriptoPay_Exception
+     * @throws Excepciones\Excepcion
      */
     private function Error($codigo){
         switch ($codigo){
@@ -193,7 +195,7 @@ class CRIPTOPAY_CLIENTE_API{
                 $mensaje = "Código desconocido"; //El error no ha sido marcado o está en desarrollo.
                 break;
         }
-        throw new CriptoPay_Exception($mensaje,$codigo);
+        throw new Excepciones\Excepcion($mensaje,$codigo);
     }
 
 
@@ -201,20 +203,18 @@ class CRIPTOPAY_CLIENTE_API{
     
     /**
      * Carga las claves Públicas y Privadas para las funciones de Cifrado/Descifrado
-     * @throws CriptoPay_Exception
+     * @throws Excepciones\Excepcion
      */
     private function CargarKeys(){        
         //Busca los certificados en la ruta enviada
         if(!file_exists($this->ApiCertificados."CriptoPay_ApiCert_".$this->ApiId.".crt")){
-            if(DEBUG){
-                throw new CriptoPay_Exception("Falta el certificado público");
-            }
+            Log::Debug("No se encuentra ".$this->ApiCertificados."CriptoPay_ApiCert_".$this->ApiId.".crt");
+            throw new Excepciones\Excepcion("Falta el certificado público");
             return false;
         }
         if(!file_exists($this->ApiCertificados."CriptoPay_ApiKey_".$this->ApiId.".key")){
-            if(DEBUG){
-                throw new CriptoPay_Exception("Falta el certificado privado");
-            }
+             Log::Debug("No se encuentra ".$this->ApiCertificados."CriptoPay_ApiCert_".$this->ApiId.".crt");
+            throw new Excepciones\Excepcion("Falta el certificado privado");
             return false;
         }
         
@@ -224,7 +224,7 @@ class CRIPTOPAY_CLIENTE_API{
         self::$KeyPublica=openssl_get_publickey($pub_key);
         if(!self::$KeyPublica){
             if(DEBUG){
-                throw new CriptoPay_Exception("El certificado cliente es inválido");
+                throw new Excepciones\Excepcion("El certificado cliente es inválido");
             }
             return false;
         }
@@ -235,7 +235,7 @@ class CRIPTOPAY_CLIENTE_API{
         self::$KeyPrivada = openssl_get_privatekey($priv_key,$this->ApiPassword);
         if(!self::$KeyPrivada){
             if(DEBUG){
-                throw new CriptoPay_Exception("El certificado privado o la clave es inválido");
+                throw new Excepciones\Excepcion("El certificado privado o la clave es inválido");
             }
             return false;
         }
@@ -253,7 +253,7 @@ class CRIPTOPAY_CLIENTE_API{
      * Las claves son de 4096b por lo que el tamaño máximo de datos a enviar  será de 4096/8 - 11 = 501b
      * 
      * @return boolean
-     * @throws CriptoPay_Exception
+     * @throws Excepciones\Excepcion
      */
     protected function Encriptar(){
         if(is_null(self::$KeyPublica)){
@@ -269,7 +269,7 @@ class CRIPTOPAY_CLIENTE_API{
         }else{
             //Si hay algun problema con la clave o con la longitud de los datos a enviar
             if(DEBUG){
-                throw new CriptoPay_Exception("No se pueden Encriptar los datos");
+                throw new Excepciones\Excepcion("No se pueden Encriptar los datos");
             }
             return false;
         }
@@ -288,7 +288,7 @@ class CRIPTOPAY_CLIENTE_API{
                 if(DEBUG){
                     echo "CLIENTE_DESENCRIPTAR";
                     var_dump($Dcifrados);
-                    throw new CriptoPay_Exception("No se pueden Desencriptar los datos");
+                    throw new Excepciones\Excepcion("No se pueden Desencriptar los datos");
                 }
                 return false;
             }else{
@@ -310,9 +310,5 @@ class CRIPTOPAY_CLIENTE_API{
         return (json_last_error() == JSON_ERROR_NONE);
     }    
     
-    
-}
-
-class CriptoPay_Exception extends Exception{
     
 }

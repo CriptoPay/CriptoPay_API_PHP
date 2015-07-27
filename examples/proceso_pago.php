@@ -7,10 +7,12 @@
  * 
  * Ejemplo funcional de la generación de un nuevo pago, así como su verificación básica.
  * 
- * @package CriptoPay_PHP
+ * @package CriptoPayApiRest
  * @subpackage Ejemplos
- * @version 2.1
+ * @version 2.2
  */
+namespace CriptoPayApiRest\src;
+use CriptoPayApiRest\src\Comun;
 
 
 if(!defined('DEBUG')){
@@ -25,15 +27,16 @@ if(!defined('CIFRADO')){
 }
 
 //Carga los ficheros necesarios y realiza comprobaciones
-require_once('src/autoload.php');
+require_once('../src/bootstrap.php');
 
 $CP_ApiId = "5575d5c6a5d92f6a3d8b4567"; //Usuario de la API
 $CP_ApiPassword = "CPouNCnjWrKoCKwiLYARr5Am55UwhCVC"; //Pasword del Usuario de la API
-$CP_ApiCertificados = "cert/";  //Ruta hacia los certificados descargados
+$CP_ApiCertificados = __DIR__."/../cert/";  //Ruta hacia los certificados descargados
 
+Comun\LOG::Iniciar(LOG_DEBUG,LOG_INFO,"logCriptoPayApiRest.csv");
 
 //Instancia del Objeto para realizar la acciones
-$CRIPTOPAY = new CRIPTOPAY_CLIENTE_API($CP_ApiId,$CP_ApiPassword,$CP_ApiCertificados);
+$CRIPTOPAY = new Comun\CriptoPayApiRest($CP_ApiId,$CP_ApiPassword,$CP_ApiCertificados);
 
 //Creamos los parametros para el pago a generar
 $pago = array(
@@ -57,7 +60,7 @@ var_dump($respuesta); //En este caso la respuesta siempre será el id
 if(isset($respuesta->idpago)){
     //Si el pago está complto mandamos al usuario a la página donde realizará el pago
     //header("Location: http://sandbox.cripto-pay.com/pago/".$respuesta->idpago); //DEBUG y pagos autovalidados
-    //header("Location: https://cripto-pay.com/pago/".$respuesta->idpago); // PRODUCCION
+    header("Location: https://cripto-pay.com/pago/".$respuesta->idpago); // PRODUCCION
     //UNA VEZ PROCESADO EL PAGO EL USUARIO SERÁ RETORNADO A URL_OK SI TODO HA IDO BIEN
     //EL USUARIO SERÁ ENVIADO A URL_KO SI PASAN MAS DE X MINUTOS SIN REALIZAR EL PAGO O PULSA EN CANCELAR.
     
