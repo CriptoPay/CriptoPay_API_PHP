@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2014-2015 CriptoPay
+ * Copyright (c) 2014-2016 CriptoPay
  */
 namespace CriptoPayApiRest\src\Comun;
 use CriptoPayApiRest\src\Excepciones;
@@ -61,6 +61,7 @@ class CriptoPayApiRest{
      * @param String $parametro Elementos a agregar con la clave enviada. No se tienen en cuenta si se pasa un Array en $Clave
      */
     public function Set($clave,$parametro=null){
+        Log::Debug("Set Parametros");
         if(!is_array($clave)){
             $this->Parametros[$clave] = $parametro;
         }else{
@@ -74,6 +75,7 @@ class CriptoPayApiRest{
      * @param String $funcion Función a ejecutar
      */
     public function Get($ambito,$funcion){
+        Log::Debug("Get ".$ambito." ".$funcion);
         //Si no se ha inicializado la sessión la arranca
         $this->ObtenerSesion();
         
@@ -86,6 +88,7 @@ class CriptoPayApiRest{
      */
     private function ObtenerSesion(){
         if(is_null(self::$SESSION)){
+            Log::Debug("Obtener Session");
             $this->Enviar("session", "code");
         }
     }
@@ -103,7 +106,7 @@ class CriptoPayApiRest{
         
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_CAINFO, "cert.crt");
+        //curl_setopt($ch, CURLOPT_CAINFO, "cert.crt");
         
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_POST, true);
