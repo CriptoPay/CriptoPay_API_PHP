@@ -15,7 +15,7 @@ use CriptoPayApiRest\src\Excepciones;
  * Recibe respuesta<--------------------------------------Encripta los datos y les envía
  * 
  * @package CriptoPay_PHP
- * @version 2.2
+ * @version 3.2
  */
 
 class CriptoPayApiRest{
@@ -24,11 +24,12 @@ class CriptoPayApiRest{
     private static $SESSION = null;
     private static $KeyPublica = null;
     private static $KeyPrivada = null;
-    private static $NONCE = false;
+    private static $NONCE = 0;
+    
+    private static $VERSION = "V320";
     
     protected $Parametros = array();
     
-    private $Cert_CRT,$Cert_KEY,$Cert_PASS,$BBDD,$CLIENTE,$BD_SESSION,$BD_API;
     protected $idapi,$RESPUESTA = array();
     
     /**
@@ -44,12 +45,14 @@ class CriptoPayApiRest{
         $this->ApiCertificados = $CP_ApiCertificados;
         if(DEBUG){
             //En modo debug el servidor siempre será SANDBOX
-            $this->ApiServidor = "http://sandbox.cripto-pay.com";
+            $this->ApiServidor = "https://testnet.cripto-pay.com";
         }elseif(!is_null($CP_ApiServidor)){
             $this->ApiServidor = $CP_ApiServidor;
         }else{
             $this->ApiServidor = "https://api.cripto-pay.com";
         }
+        
+        $this->ApiServidor = $this->ApiServidor."/".  self::$VERSION;
         
         //Limpiamos el última slash para prevenir errores
         $this->ApiServidor = (substr($this->ApiServidor,-1)=="/")?substr($this->ApiServidor, 0,strlen($this->ApiServidor)-2):$this->ApiServidor;
@@ -122,6 +125,7 @@ class CriptoPayApiRest{
             //Si es petición con sessión abierta se le pasa directamente la Session
             $peticion['session']=self::$SESSION;
             $peticion['datos']=$this->Encriptar(); //Los datos se envían Cifrados internamente
+            self::$NONCE = time();
             $peticion['nonce']= self::$NONCE;
         }
         
@@ -135,7 +139,9 @@ class CriptoPayApiRest{
         $estado_HTTP = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         //Si la cabecera es desconocida devuelve una excepción
         if ($estado_HTTP != 200 && $estado_HTTP != 500 && $estado_HTTP <=900) {
-            var_dump($respuesta_server);
+            Log::Debug("PETICION ".$this->ApiServidor."/".$ambito."/".$funcion);
+            //var_dump($peticion);
+            //var_dump($respuesta_server);
             throw new Excepciones\Excepcion(sprintf('Curl response http error code "%s"', curl_getinfo($ch, CURLINFO_HTTP_CODE)));
         }elseif ($estado_HTTP >=900) {
             //Si la respuesta devuelve cabecera de error personalizado lo procesa
@@ -145,14 +151,21 @@ class CriptoPayApiRest{
         
         if(is_null(self::$SESSION)){
             //Si se está inicializando la sessión verifica y guarda el Token recibido
-            $token = $respuesta_server;
-            if(strlen($token)==24){
-                self::$SESSION = $token;
+            $respuesta = json_decode($respuesta_server);
+            if(json_last_error()===0){
+                if($respuesta->estado == "success"){
+                    self::$SESSION = $token;
+                    return true;
+                }else{
+                    throw new Excepciones\Excepcion($respuesta->message);
+                }
+            }elseif(strlen($respuesta_server)==24){
+                self::$SESSION = $respuesta_server;
+                return true;
             }else{
-                var_dump($token);
-                throw new Excepciones\Excepcion("Hay suplantación de sessión");
+                //var_dump($respuesta_server);
+                throw new Excepciones\Excepcion("Error al fijar la session");
             }
-            return true;
         }elseif(strlen($respuesta_server)==0){
             //Si el servidor devuelve cabecera correcta pero ningun dato salta escepción.
             throw new Excepciones\Excepcion("El servidor no ha devuelto ningún dato");
@@ -163,6 +176,7 @@ class CriptoPayApiRest{
             if($claro->nonce != self::$NONCE){
                 throw new Excepciones\Excepcion("Hay suplantación de identidad");
             }
+            self::$NONCE++;
         }
         curl_close($ch);
         return $claro;
@@ -266,7 +280,7 @@ class CriptoPayApiRest{
         //Para encriptar los datos les pasamos a a String JSON
         $claro = json_encode($this->Parametros);
         openssl_public_encrypt($claro,$finaltext,self::$KeyPublica);
-        if (!empty($finaltext)) {
+        if (!empty($finaltext)){
             //Si están bien cifrados les codificamos para poder enviarles por HTTP
             return base64_encode($finaltext);
         }else{
