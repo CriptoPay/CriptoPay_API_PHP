@@ -11,11 +11,16 @@ DIVISA
 
 CRIPTO
 ------
+> **nota**
+>
+> No todas las divisas tienen porque estár actualmente activadas
 BTC -> Bitcoin
 LTC -> Litecoin
 DOGE -> Dogecoin
 PTC -> Pesetacoin
 SPA -> Spaincoin
+NAME -> Namecoin
+OK -> Okcash
 
 FIAT
 ----
